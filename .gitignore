@@ -51,6 +51,11 @@ Makefile
 install_manifest.txt
 compile_commands.json
 
+.DS_Store
+.idea
+dist
+dist-*
+
 # Temporary files
 *.tmp
 *.log
@@ -66,3 +71,8 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# log output of the tests and of the examples
+minilog_test_logs/
+minilog_core_test_logs/
+demo_logs/
