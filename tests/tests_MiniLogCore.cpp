@@ -337,7 +337,18 @@ void testPatternTime() {
     "the short and the ISO time are formatted");
   check(formatWith("%I %p %r", afternoonMessage) == std::string("02 PM 02:07:09 PM") + MINILOG_EOL,
     "the 12-hour clock and the meridiem are formatted");
-  check(formatWith("%e|%f|%F", afternoonMessage) == std::string("123|123456|123456700") + MINILOG_EOL,
+  // The message stores a Clock::time_point, so the fraction is limited by the
+  // resolution of std::chrono::system_clock. On Apple that is microseconds, so a
+  // 700 ns component cannot be represented; read the expected value back from the
+  // time point that was actually constructed instead of assuming nanoseconds.
+  const auto afternoonSeconds = std::chrono::duration_cast<std::chrono::seconds>(afternoon.time_since_epoch());
+  const auto afternoonFraction = afternoon.time_since_epoch() - afternoonSeconds;
+  char afternoonFractionText[64];
+  std::snprintf(afternoonFractionText, sizeof(afternoonFractionText), "%03lld|%06lld|%09lld",
+    static_cast<long long>(std::chrono::duration_cast<std::chrono::milliseconds>(afternoonFraction).count()),
+    static_cast<long long>(std::chrono::duration_cast<std::chrono::microseconds>(afternoonFraction).count()),
+    static_cast<long long>(std::chrono::duration_cast<std::chrono::nanoseconds>(afternoonFraction).count()));
+  check(formatWith("%e|%f|%F", afternoonMessage) == std::string(afternoonFractionText) + MINILOG_EOL,
     "milliseconds, microseconds and nanoseconds are formatted");
   check(formatWith("%E", afternoonMessage) == std::string("50829") + MINILOG_EOL,
     "the seconds since the epoch are formatted");
